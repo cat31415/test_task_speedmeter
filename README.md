@@ -1,3 +1,134 @@
 # Speedmeter
 
-Console utility for measuring download speed by fetching a URL several times.
+`speedmeter` - простая консольная утилита для замера скорости скачивания.
+Она последовательно скачивает указанный URL несколько раз, считает среднее время
+одного запроса, общий объем загруженных данных и итоговую скорость в MB/s.
+
+Проект сделан без внешних runtime-зависимостей: для HTTP-запросов используется
+стандартная библиотека Python.
+
+## Требования
+
+- Python 3.10 или новее
+- Доступ в интернет для замера реального URL
+
+Проверить установленную версию Python:
+
+```bash
+python --version
+```
+
+или:
+
+```bash
+python3 --version
+```
+
+## Установка
+
+Из корня репозитория:
+
+```bash
+python -m pip install .
+```
+
+После установки будет доступна команда:
+
+```bash
+speedmeter -h
+```
+
+Если не хочется устанавливать пакет, можно запускать модуль напрямую:
+
+```bash
+python -m speedmeter -h
+```
+
+## Использование
+
+Для быстрого теста можно использовать публичную sample-картинку размером
+около 5.3 MB:
+
+```text
+https://filesamples.com/samples/image/jpeg/sample_5184%C3%973456.jpeg
+```
+
+Базовый запуск:
+
+```bash
+speedmeter https://filesamples.com/samples/image/jpeg/sample_5184%C3%973456.jpeg
+```
+
+Альтернативный запуск без установки:
+
+```bash
+python -m speedmeter https://filesamples.com/samples/image/jpeg/sample_5184%C3%973456.jpeg
+```
+
+По умолчанию утилита выполняет 10 последовательных запросов. URL лучше выбирать
+на достаточно большой файл или изображение, чтобы результат был стабильнее.
+
+### Опции
+
+```bash
+speedmeter -h
+```
+
+Основные параметры:
+
+- `url` - адрес файла для скачивания.
+- `-n`, `--requests` - количество последовательных запросов, по умолчанию `10`.
+- `-t`, `--timeout` - таймаут одного запроса в секундах, по умолчанию `30`.
+- `-c`, `--chunk-size` - размер буфера чтения в байтах, по умолчанию `65536`.
+
+Пример с двумя запросами и таймаутом 10 секунд:
+
+```bash
+speedmeter https://filesamples.com/samples/image/jpeg/sample_5184%C3%973456.jpeg --requests 2 --timeout 10
+```
+
+## Пример вывода
+
+```text
+Requests: 10
+Average request time: 0.482 s
+Total downloaded: 25.600 MB (25600000 bytes)
+Total time: 4.817 s
+Download speed: 5.314 MB/s
+```
+
+Скорость считается в десятичных мегабайтах:
+
+```text
+1 MB = 1_000_000 bytes
+```
+
+## Проверка
+
+Запустить тесты через `unittest`:
+
+```bash
+python -m unittest discover -s tests
+```
+
+Проверить справку CLI:
+
+```bash
+python -m speedmeter -h
+```
+
+Проверить реальный запуск:
+
+```bash
+python -m speedmeter https://filesamples.com/samples/image/jpeg/sample_5184%C3%973456.jpeg --requests 2
+```
+
+## Обработка ошибок
+
+Утилита завершится с кодом `1` и выведет сообщение в `stderr`, если:
+
+- URL недоступен;
+- сервер вернул HTTP-ошибку;
+- истек таймаут;
+- ответ пустой;
+- переданы некорректные числовые параметры.
