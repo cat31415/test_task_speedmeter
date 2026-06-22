@@ -17,6 +17,9 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
+[project.scripts]
+speedmeter = "speedmeter.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["speedmeter*"]
