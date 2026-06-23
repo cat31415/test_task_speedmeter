@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 
 
@@ -5,6 +6,16 @@ from dataclasses import dataclass
 class DownloadResult:
     bytes_downloaded: int
     elapsed_seconds: float
+
+
+@dataclass(frozen=True)
+class DownloadProgress:
+    bytes_downloaded: int
+    total_bytes: int | None
+    elapsed_seconds: float
+
+
+ProgressCallback = Callable[[DownloadProgress], None]
 
 
 @dataclass(frozen=True)

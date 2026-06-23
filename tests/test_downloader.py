@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import patch
 
 from speedmeter.downloader import DownloadError, UrlDownloader
+from speedmeter.models import DownloadProgress
 
 
 class PayloadHandler(BaseHTTPRequestHandler):
@@ -31,11 +32,24 @@ class EmptyPayloadHandler(BaseHTTPRequestHandler):
 
 class UrlDownloaderTests(unittest.TestCase):
     def test_download_reads_response_body_in_chunks(self) -> None:
+        progress_updates: list[DownloadProgress] = []
+
         with no_proxy_for_localhost(), running_server(PayloadHandler) as url:
-            result = UrlDownloader().download(url, timeout=5, chunk_size=17)
+            result = UrlDownloader().download(
+                url,
+                timeout=5,
+                chunk_size=17,
+                progress_callback=progress_updates.append,
+            )
 
         self.assertEqual(result.bytes_downloaded, len(PayloadHandler.payload))
         self.assertGreater(result.elapsed_seconds, 0)
+        self.assertEqual(progress_updates[0].bytes_downloaded, 0)
+        self.assertEqual(progress_updates[0].total_bytes, len(PayloadHandler.payload))
+        self.assertEqual(
+            progress_updates[-1].bytes_downloaded,
+            len(PayloadHandler.payload),
+        )
 
     def test_download_rejects_empty_body(self) -> None:
         with no_proxy_for_localhost(), running_server(EmptyPayloadHandler) as url:
